@@ -7,6 +7,8 @@ const imageSelect = document.getElementById("image-select");
 const ratioSelect = document.getElementById("ratio-select");
 const Gallerygrid = document.querySelector(".gallery-grid");
 
+const NOT_AN_API_KEY = "YOUR_HUGGING_FACE_TOKEN"
+
 const randomPrompt = [
     "A magic forest with glowing plants and fairy homes among giant mushrooms",
     "An old steampunk airship floating through golden clouds at sunset",
@@ -56,7 +58,7 @@ const getImageDimension=(selectratio, baseSize = 512)=>{
 
 };
 const updateImageCard=(ImgIndex, ImgUrl)=>{
-    var ImageCard = document.getElementById(`img-card-${ImgIndex}`);
+    var ImageCard = document.getElementById(`image-card-${ImgIndex}`);
     if(!ImageCard) return;
 
     ImageCard.classList.remove("loading");
@@ -68,41 +70,35 @@ const updateImageCard=(ImgIndex, ImgUrl)=>{
                             </div>`;
 }
 
-const showImageError = (ImgIndex, message) => {
-    const imageCard = document.getElementById(`img-card-${ImgIndex}`);
-    if (!imageCard) return;
-
-    imageCard.classList.remove("loading");
-    imageCard.classList.add("error");
-    imageCard.querySelector(".status-text").textContent = message;
-};
-
 const generateImage=async(selectmodal, selectimage, selectratio, selectprompt)=>{
+    const BASE_URL = `https://router.huggingface.co/hf-inference/models/${selectmodal}`;
     const {width, height} = getImageDimension(selectratio)
     const imagePromises = Array.from({length:selectimage}, async(_,i)=>{
         try{
-        const response = await fetch("/api/generate", {
+        const response = await fetch(
+        BASE_URL,{
             method: "POST",
             headers: {
+                Authorization: `Bearer ${NOT_AN_API_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: selectmodal,
-                prompt: selectprompt,
-                width,
-                height,
+                inputs: selectprompt,
+                parameters:{width, height},
+                options :{wait_for_model:true,
+                     use_cache:false}
             }),
-        });
+        })
         if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.error || `Image generation failed (${response.status})`);
+            const error = await response.json();
+            throw new Error(error.error || "Image generation failed");
         }
-        const result = await response.blob();
-        updateImageCard(i, URL.createObjectURL(result));
+    const result = await response.blob();
+    updateImageCard(i, URL.createObjectURL(result));
+    console.log(result)
     }
     catch(error){
-        console.error(error);
-        showImageError(i, error.message);
+        console.log(error);
     }
     });
     await Promise.allSettled(imagePromises);
