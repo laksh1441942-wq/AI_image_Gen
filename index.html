@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body >
+    <div class="container">
+        <header class="header">
+            <div class="logo-wrapper">
+                <div class="logo">🪄</div>
+                <h1>AI Image Generator</h1>
+
+            </div>
+            <button class="theme-toggle">
+                <i class="icon">☾</i>
+            </button>
+        </header>
+
+        <div class="main-content">
+            <form class="prompt-form">
+                <div class="prompt-container" >
+                    <textarea class="prompt-input" placeholder="Describe your imagination in detail..." required autofocus></textarea>
+                    <button type="button" class="random-btn" title="Use a random prompt" aria-label="Use a random prompt">🎲</button>
+                </div>
+
+            <div class="prompt-actions">
+                <div class="select-wrapper">
+                    <select class="custom-select" id="model-select" required>
+                        <option value="" selected disabled>Select Model</option>
+                        <option value="black-forest-labs/FLUX.1-schnell">FLUX.1-schnell</option>
+                        <option value="black-forest-labs/FLUX.1-dev">FLUX.1-dev</option>
+                        <option value="black-forest-labs/FLUX.1-Krea-dev">FLUX.1-Krea-dev</option>
+                        <option value="ideogram-ai/ideogram-4-fp8">Ideogram 4</option>
+                    </select>
+                </div>
+
+                <div class="select-wrapper">
+                    <select class="custom-select" id="image-select" required>
+                        <option value="" selected disabled>Image Count</option>
+                        <option value="1" >1 Image</option>
+                        <option value="2" >2 Image</option>
+                        <option value="3" >3 Image</option>
+                        <option value="4" >4 Image</option>
+                    </select>
+                </div>
+
+                <div class="select-wrapper">
+                    <select class="custom-select" id="ratio-select" required>
+                            <option value="" selected disabled>Aspect Ratio</option>
+                            <option value="1/1" >Square(1:1)</option>
+                            <option value="16/9" >Landscape(16:9)</option>
+                            <option value="9/16" >Potrait(9:16)</option>
+                        </select>
+                </div>
+                <button type="submit" class="generate-btn">🪄 Generate</button>
+            </div>
+
+            </form>
+        
+
+            <div class="gallery-grid"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
