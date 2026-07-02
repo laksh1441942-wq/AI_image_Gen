@@ -87,8 +87,8 @@ const generateImage=async(selectmodal, selectimage, selectratio, selectprompt)=>
             }),
         })
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || "Image generation failed");
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.error || `Image generation failed (${response.status})`);
         }
     const result = await response.blob();
     updateImageCard(i, URL.createObjectURL(result));
