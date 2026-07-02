@@ -7,8 +7,6 @@ const imageSelect = document.getElementById("image-select");
 const ratioSelect = document.getElementById("ratio-select");
 const Gallerygrid = document.querySelector(".gallery-grid");
 
-const NOT_AN_API_KEY = "YOUR_HUGGING_FACE_TOKEN"
-
 const randomPrompt = [
     "A magic forest with glowing plants and fairy homes among giant mushrooms",
     "An old steampunk airship floating through golden clouds at sunset",
@@ -32,7 +30,7 @@ const randomPrompt = [
     const savedtheme = localStorage.getItem("theme");
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme : dark)").matches;
 
-    isDarktheme = savedtheme === "dark" || (!savedtheme && systemPrefersDark);
+    const isDarktheme = savedtheme === "dark" || (!savedtheme && systemPrefersDark);
     document.body.classList.toggle("dark-theme", isDarktheme);
     themetoggle.querySelector("i").textContent = isDarktheme ? "☾" : "☀️" ;
 
@@ -58,7 +56,7 @@ const getImageDimension=(selectratio, baseSize = 512)=>{
 
 };
 const updateImageCard=(ImgIndex, ImgUrl)=>{
-    var ImageCard = document.getElementById(`image-card-${ImgIndex}`);
+    var ImageCard = document.getElementById(`img-card-${ImgIndex}`);
     if(!ImageCard) return;
 
     ImageCard.classList.remove("loading");
@@ -71,18 +69,17 @@ const updateImageCard=(ImgIndex, ImgUrl)=>{
 }
 
 const generateImage=async(selectmodal, selectimage, selectratio, selectprompt)=>{
-    const BASE_URL = `https://router.huggingface.co/hf-inference/models/${selectmodal}`;
     const {width, height} = getImageDimension(selectratio)
     const imagePromises = Array.from({length:selectimage}, async(_,i)=>{
         try{
         const response = await fetch(
-        BASE_URL,{
+        "/api/generate",{
             method: "POST",
             headers: {
-                Authorization: `Bearer ${NOT_AN_API_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                model: selectmodal,
                 inputs: selectprompt,
                 parameters:{width, height},
                 options :{wait_for_model:true,
@@ -98,7 +95,10 @@ const generateImage=async(selectmodal, selectimage, selectratio, selectprompt)=>
     console.log(result)
     }
     catch(error){
-        console.log(error);
+        const ImageCard = document.getElementById(`img-card-${i}`);
+        ImageCard.classList.remove("loading");
+        ImageCard.classList.add("error");
+        ImageCard.querySelector(".status-text").textContent = error.message;
     }
     });
     await Promise.allSettled(imagePromises);
@@ -120,7 +120,6 @@ const createImageCard = (selectmodal, selectimage, selectratio, selectprompt)=>{
                                         <i class="error">❗️</i>
                                         <p class="status-text">Generating...</p>
                                     </div>
-                                        <img src="test.jpeg" class="result-img"/>
                                 </div>`;
     }
     generateImage(selectmodal, selectimage, selectratio, selectprompt);
