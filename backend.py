@@ -1,9 +1,9 @@
 import os
+from io import BytesIO
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from huggingface_hub import InferenceClient
-from huggingface_hub.inference._providers import get_provider_helper
 
 load_dotenv()
 
@@ -27,20 +27,16 @@ def generate_image():
 
     try:
         client = InferenceClient(api_key=api_key, timeout=120)
-        provider = get_provider_helper(client.provider, task="text-to-image", model=model)
-        image_request = provider.prepare_request(
-            inputs=data["inputs"],
-            parameters={
-                "width": parameters["width"],
-                "height": parameters["height"],
-            },
-            headers=client.headers,
+        image = client.text_to_image(
+            data["inputs"],
             model=model,
-            api_key=client.token,
+            width=parameters["width"],
+            height=parameters["height"],
         )
-        image = client._inner_post(image_request)
-        image = provider.get_response(image, image_request)
+        image_bytes = BytesIO()
+        image.save(image_bytes, format="PNG")
+        image_bytes.seek(0)
     except Exception as error:
         return jsonify(error=str(error)), 502
 
-    return image, 200, {"Content-Type": "image/png"}
+    return send_file(image_bytes, mimetype="image/png")
